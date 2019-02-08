@@ -12,6 +12,7 @@
 		994D3058220DE48100E3219F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 994D3056220DE48100E3219F /* Main.storyboard */; };
 		994D305A220DE48300E3219F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 994D3059220DE48300E3219F /* Assets.xcassets */; };
 		994D305D220DE48300E3219F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 994D305B220DE48300E3219F /* LaunchScreen.storyboard */; };
+		994D3065220E038200E3219F /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994D3064220E038200E3219F /* SearchResult.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		994D3059220DE48300E3219F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		994D305C220DE48300E3219F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		994D305E220DE48300E3219F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		994D3064220E038200E3219F /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,11 +57,12 @@
 			isa = PBXGroup;
 			children = (
 				994D3052220DE48100E3219F /* AppDelegate.swift */,
-				994D3054220DE48100E3219F /* SearchViewController.swift */,
-				994D3056220DE48100E3219F /* Main.storyboard */,
 				994D3059220DE48300E3219F /* Assets.xcassets */,
-				994D305B220DE48300E3219F /* LaunchScreen.storyboard */,
 				994D305E220DE48300E3219F /* Info.plist */,
+				994D305B220DE48300E3219F /* LaunchScreen.storyboard */,
+				994D3056220DE48100E3219F /* Main.storyboard */,
+				994D3064220E038200E3219F /* SearchResult.swift */,
+				994D3054220DE48100E3219F /* SearchViewController.swift */,
 			);
 			path = StoreSearch;
 			sourceTree = "<group>";
@@ -136,6 +139,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				994D3055220DE48100E3219F /* SearchViewController.swift in Sources */,
+				994D3065220E038200E3219F /* SearchResult.swift in Sources */,
 				994D3053220DE48100E3219F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
