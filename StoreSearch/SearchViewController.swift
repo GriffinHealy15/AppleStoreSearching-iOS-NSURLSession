@@ -19,6 +19,7 @@ class SearchViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        searchBar.becomeFirstResponder() // open the keyboard right away
         // tell the tableView to add 20 point margin for status bar + 44 point margin for search bar
         tableView.contentInset = UIEdgeInsets(top: 64, left: 0,
                                               bottom: 0, right: 0)
