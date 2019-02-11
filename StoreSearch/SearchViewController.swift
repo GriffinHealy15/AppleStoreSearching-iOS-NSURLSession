@@ -22,6 +22,23 @@ class SearchViewController: UIViewController {
         // tell the tableView to add 20 point margin for status bar + 44 point margin for search bar
         tableView.contentInset = UIEdgeInsets(top: 64, left: 0,
                                               bottom: 0, right: 0)
+        // load the nib file for use in code
+        var cellNib = UINib(nibName: TableView.CellIdentifiers.searchResultCell, bundle: nil)
+        // register the nib for the tableView with reuse identifier "SearchResultCell"
+        tableView.register(cellNib, forCellReuseIdentifier:
+            TableView.CellIdentifiers.searchResultCell)
+        
+        cellNib = UINib(nibName: // load the cell nib with identifier "NothingFoundCell"
+            TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: // tableView registers the new nib
+            TableView.CellIdentifiers.nothingFoundCell)
+    }
+    
+    struct TableView {
+        struct CellIdentifiers {
+            static let searchResultCell = "SearchResultCell"
+            static let nothingFoundCell = "NothingFoundCell"
+        }
     }
 }
 
@@ -70,22 +87,19 @@ UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellIdentifier = "SearchResultCell"
-        var cell:UITableViewCell! = tableView.dequeueReusableCell( withIdentifier: cellIdentifier)
-            if cell == nil {
-            cell = UITableViewCell(style: .subtitle,
-            reuseIdentifier: cellIdentifier)
-        }
-        if searchResults.count == 0 {
-            cell.textLabel!.text = "(Nothing found)"
-            cell.detailTextLabel!.text = ""
-        } else { // if searchResults has amount greater than 0 (so 1+)
-            let searchResult = searchResults[indexPath.row] // find the index of the row we want to put the cell in, then grab that searchResults corresponding (matching) array spot
-            cell.textLabel!.text = searchResult.name // with searchResult object, set cell name
-            cell.detailTextLabel!.text = searchResult.artistName
-        }
-        return cell
-       }
+        if searchResults.count == 0 { // if no results, put cell with text 'Nothing Found' in table
+            return tableView.dequeueReusableCell(withIdentifier:
+                TableView.CellIdentifiers.nothingFoundCell,
+                                                 for: indexPath)
+        } else { // otherwise, get the 'SearchResultCell' and set labels in the custom 'SearchResultCell.swift', which will update the SearchResultCell.nib we are displaying in the tableView
+            let cell = tableView.dequeueReusableCell(withIdentifier:
+                TableView.CellIdentifiers.searchResultCell,
+                                                     for: indexPath) as! SearchResultCell
+            let searchResult = searchResults[indexPath.row]
+            cell.nameLabel.text = searchResult.name
+            cell.artistNameLabel.text = searchResult.artistName
+            return cell
+        } }
     func tableView(_ tableView: UITableView, // tableView tells us index of row selected
                    didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true) // deselect the row of that index
