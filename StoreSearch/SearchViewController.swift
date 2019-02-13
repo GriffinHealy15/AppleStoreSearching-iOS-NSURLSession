@@ -13,9 +13,11 @@ class SearchViewController: UIViewController {
     // weak vars prevented from deallocation by the superview (superview has strong reference)
     @IBOutlet weak var searchBar: UISearchBar! // connects to UISearchBar in storyboard
     @IBOutlet weak var tableView: UITableView!
+ 
     // Below: think of as empty array that can contain many SearchResult objects
     var searchResults = [SearchResult]() // hold instances of SearchResult (several SearchResult())
     var hasSearched = false // bool to see if we tried a search yet
+    //var count : Int = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +43,43 @@ class SearchViewController: UIViewController {
             static let nothingFoundCell = "NothingFoundCell"
         }
     }
+    // MARK:- Helper Methods
+    func iTunesURL(searchText: String) -> URL { // get url
+        let encodedText = searchText.addingPercentEncoding( // encode the search text with UTF-8
+            withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+        let urlString = String(format: // use encoded text as the itunes url + encoded string
+            "https://itunes.apple.com/search?term=%@", encodedText)
+        let url = URL(string: urlString)
+        return url!
+    }
+    func performStoreRequest(with url: URL) -> Data? { // perform network search, return data
+        do {
+            return try Data(contentsOf:url) // get contents of url as a Data format
+            //return try String(contentsOf: url, encoding: .utf8)
+        } catch {
+            print("Download Error: \(error.localizedDescription)")
+            showNetworkError() // when don't have data contents from the url
+            return nil
+        } }
+    func parse(data: Data) -> [SearchResult] { // with retrieved data, parse the retrieved data, return searchresult object
+        do {
+            let decoder = JSONDecoder()
+            // use a JSONDecoder object to convert the response data from the server to a temporary ResultArray object from which you exctract the results property
+            let result = try decoder.decode(ResultArray.self, from:data)
+            return result.results // with the decoded data, we look at results property and get each result object from the data
+        } catch {
+            print("JSON Error: \(error)")
+            return [] }
+    }
+    func showNetworkError() {
+        let alert = UIAlertController(title: "Whoops...", // obj alert controller that displays msg
+                                      message: "There was an error accessing the iTunes Store." +
+            " Please try again.", preferredStyle: .alert) // action taken when button pressed
+        let action = UIAlertAction(title: "OK", style: .default,
+                                   handler: nil)
+        present(alert, animated: true, completion: nil) // present alert
+        alert.addAction(action) // attaches action object to alert or action sheet
+    }
 }
 
 // SearchBarDelegate extension methods
@@ -49,20 +88,18 @@ class SearchViewController: UIViewController {
 extension SearchViewController: UISearchBarDelegate {
     // tells delegate 'Search' button was pressed
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder() //close keyboard when 'Search' clicked
-        searchResults = []
-        // add a bunch of fake searchResult() objs to searchResults[]
-        if searchBar.text! != "justin bieber" {
-            
-        for i in 0...2 {
-            let searchResult = SearchResult() // create a single instance of SearchResult object
-            searchResult.name = String(format: "Fake Result %d for", i)
-            searchResult.artistName = searchBar.text! // single instance object to add to the array that can contain many SearchResult instances
-            searchResults.append(searchResult)
+        if !searchBar.text!.isEmpty { // if searchBar has text in it when 'Search' clicked
+            searchBar.resignFirstResponder() // hide keyboard
+            hasSearched = true
+            searchResults = []
+            let url = iTunesURL(searchText: searchBar.text!) // get the itunes.com + /search
+            //print("URL: '\(url)'")
+            if let data = performStoreRequest(with: url) { // retrieve json data
+                searchResults = parse(data: data) // parse the json data, place the returned array into searchResults array which is really [SearchResult]()
+                searchResults.sort { $0 < $1 } // searchResults calls sort with overloaded <
+            }
+            tableView.reloadData()
         }
-        }
-        hasSearched = true // search bar tells us it was clicked, so we set hasSearched = true
-        tableView.reloadData()
     }
     func position(for bar: UIBarPositioning) -> UIBarPosition {
         return .topAttached // status bar same as search bar color
@@ -94,11 +131,17 @@ UITableViewDataSource {
                                                  for: indexPath)
         } else { // otherwise, get the 'SearchResultCell' and set labels in the custom 'SearchResultCell.swift', which will update the SearchResultCell.nib we are displaying in the tableView
             let cell = tableView.dequeueReusableCell(withIdentifier:
-                TableView.CellIdentifiers.searchResultCell,
-                                                     for: indexPath) as! SearchResultCell
-            let searchResult = searchResults[indexPath.row]
+                TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
+            let searchResult = searchResults[indexPath.row] // get array value at indexes 0,1,2..
             cell.nameLabel.text = searchResult.name
-            cell.artistNameLabel.text = searchResult.artistName
+            if searchResult.artist.isEmpty { // if artist is nil, meaning artistName not set
+                cell.artistNameLabel.text = "Unknown"
+            } else { // otherwise, set the label with artist + type
+                cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artist, searchResult.type)
+            }
+            //print("count \(count)")
+            //print("index \(indexPath)")
+            //count = count + 1;
             return cell
         } }
     func tableView(_ tableView: UITableView, // tableView tells us index of row selected
