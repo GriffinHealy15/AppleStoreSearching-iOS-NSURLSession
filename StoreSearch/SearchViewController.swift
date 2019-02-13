@@ -17,6 +17,7 @@ class SearchViewController: UIViewController {
     // Below: think of as empty array that can contain many SearchResult objects
     var searchResults = [SearchResult]() // hold instances of SearchResult (several SearchResult())
     var hasSearched = false // bool to see if we tried a search yet
+    var isLoading = false // bool to see if we are in a network search
     //var count : Int = 0
 
     override func viewDidLoad() {
@@ -35,20 +36,26 @@ class SearchViewController: UIViewController {
             TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
         tableView.register(cellNib, forCellReuseIdentifier: // tableView registers the new nib
             TableView.CellIdentifiers.nothingFoundCell)
+        
+        cellNib = UINib(nibName: TableView.CellIdentifiers.loadingCell, // load the cell nib with the name "LoadingCell"
+                        bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: // register the nib with tableview
+            // tableView can now access the nib cell when asked to
+            TableView.CellIdentifiers.loadingCell)
     }
     
     struct TableView {
         struct CellIdentifiers {
             static let searchResultCell = "SearchResultCell"
             static let nothingFoundCell = "NothingFoundCell"
+            static let loadingCell = "LoadingCell"
         }
     }
     // MARK:- Helper Methods
     func iTunesURL(searchText: String) -> URL { // get url
         let encodedText = searchText.addingPercentEncoding( // encode the search text with UTF-8
             withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        let urlString = String(format: // use encoded text as the itunes url + encoded string
-            "https://itunes.apple.com/search?term=%@", encodedText)
+        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
         let url = URL(string: urlString)
         return url!
     }
@@ -60,7 +67,7 @@ class SearchViewController: UIViewController {
             print("Download Error: \(error.localizedDescription)")
             showNetworkError() // when don't have data contents from the url
             return nil
-        } }
+        } } // return as a [SearchResult]
     func parse(data: Data) -> [SearchResult] { // with retrieved data, parse the retrieved data, return searchresult object
         do {
             let decoder = JSONDecoder()
@@ -90,15 +97,25 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if !searchBar.text!.isEmpty { // if searchBar has text in it when 'Search' clicked
             searchBar.resignFirstResponder() // hide keyboard
+            isLoading = true  // set isLoading to true because we now are going to network search
+            tableView.reloadData() // reload the tableView, tableView will be asked to be reloaded
             hasSearched = true
             searchResults = []
-            let url = iTunesURL(searchText: searchBar.text!) // get the itunes.com + /search
-            //print("URL: '\(url)'")
-            if let data = performStoreRequest(with: url) { // retrieve json data
-                searchResults = parse(data: data) // parse the json data, place the returned array into searchResults array which is really [SearchResult]()
-                searchResults.sort { $0 < $1 } // searchResults calls sort with overloaded <
-            }
-            tableView.reloadData()
+            // 1
+            let queue = DispatchQueue.global() // create a dispatch queue to put closures into
+            let url = self.iTunesURL(searchText: searchBar.text!) // find the url to network search
+            // 2
+            queue.async { // dispatch a closure to the background queue (code that needs to run in background)
+                if let data = self.performStoreRequest(with: url) {
+                    self.searchResults = self.parse(data: data)
+                    self.searchResults.sort(by: <)
+                    // 3 code that needs to updates the user interface
+                    DispatchQueue.main.async { // dispatch closure on main queue (properties are UI properties so if they are in a closure, must be dispatched to main queue)
+                        self.isLoading = false // set to false so Loading... not shown now
+                        self.tableView.reloadData() // tableview reloaded
+                    }
+                    return
+                } }
         }
     }
     func position(for bar: UIBarPositioning) -> UIBarPosition {
@@ -114,7 +131,10 @@ UITableViewDataSource {
     // override not used like in previous apps we built because were using a regular view controller which does not have any tableView methods to override. We just say were the delegate of a tableview and were implementing the tableview delegate methods, UITableViewController has tableview delegate built in with tableView methods in the controller itself
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        if (hasSearched != true) { // if haven't searched, return 0, so no cells created then
+        if(isLoading == true) { // if loading is true, we are loading searches
+            return 1 // we want to display 1 row with 1 cell that will show the "LoadingCell"
+        }
+        else if (hasSearched != true) { // if haven't searched, return 0, so no cells created then
             return 0
         }
          else if searchResults.count == 0 { // if zero in searchResults[], then return 1 to put "Nothing"
@@ -125,7 +145,14 @@ UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if searchResults.count == 0 { // if no results, put cell with text 'Nothing Found' in table
+        if isLoading { // if loading searches, isLoading is set to true
+            let cell = tableView.dequeueReusableCell(withIdentifier: // prepare "LoadingCell"
+                TableView.CellIdentifiers.loadingCell, for: indexPath)
+            let spinner = cell.viewWithTag(100) as!
+            UIActivityIndicatorView // look at cells tag 100, which is indicatorview
+            spinner.startAnimating() // we tell spinner (indicatorview) to start spinning animation
+            return cell }
+        else if searchResults.count == 0 { // if no results, put cell with text 'Nothing Found' in table
             return tableView.dequeueReusableCell(withIdentifier:
                 TableView.CellIdentifiers.nothingFoundCell,
                                                  for: indexPath)
@@ -150,7 +177,7 @@ UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView,
                    willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if searchResults.count == 0 { // if no results, don't allow row to be selected
+        if searchResults.count == 0 || isLoading { // if no results or is loading, don't allow row to be selected
             return nil
         } else {
             return indexPath
