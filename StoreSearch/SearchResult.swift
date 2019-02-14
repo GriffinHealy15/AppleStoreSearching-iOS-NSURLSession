@@ -9,6 +9,7 @@
 import Foundation
 // class is a blueprint to hold the SearchResult data we retrieve from the network
 // Main idea -> searchResults = [SearchResult]() = [SearchResult(), SearchResult(), ..., n]
+// ResultArray is the model object
 class ResultArray:Codable { // JSONdecoder decodes in this { } format with two keys
     var resultCount = 0
     var results = [SearchResult]() // place results in here

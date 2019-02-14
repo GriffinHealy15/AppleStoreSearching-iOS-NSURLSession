@@ -59,15 +59,7 @@ class SearchViewController: UIViewController {
         let url = URL(string: urlString)
         return url!
     }
-    func performStoreRequest(with url: URL) -> Data? { // perform network search, return data
-        do {
-            return try Data(contentsOf:url) // get contents of url as a Data format
-            //return try String(contentsOf: url, encoding: .utf8)
-        } catch {
-            print("Download Error: \(error.localizedDescription)")
-            showNetworkError() // when don't have data contents from the url
-            return nil
-        } } // return as a [SearchResult]
+    
     func parse(data: Data) -> [SearchResult] { // with retrieved data, parse the retrieved data, return searchresult object
         do {
             let decoder = JSONDecoder()
@@ -101,23 +93,45 @@ extension SearchViewController: UISearchBarDelegate {
             tableView.reloadData() // reload the tableView, tableView will be asked to be reloaded
             hasSearched = true
             searchResults = []
-            // 1
-            let queue = DispatchQueue.global() // create a dispatch queue to put closures into
-            let url = self.iTunesURL(searchText: searchBar.text!) // find the url to network search
-            // 2
-            queue.async { // dispatch a closure to the background queue (code that needs to run in background)
-                if let data = self.performStoreRequest(with: url) {
-                    self.searchResults = self.parse(data: data)
-                    self.searchResults.sort(by: <)
-                    // 3 code that needs to updates the user interface
-                    DispatchQueue.main.async { // dispatch closure on main queue (properties are UI properties so if they are in a closure, must be dispatched to main queue)
-                        self.isLoading = false // set to false so Loading... not shown now
-                        self.tableView.reloadData() // tableview reloaded
+            // 1 create url object
+            let url = iTunesURL(searchText: searchBar.text!)
+            // 2 get a shared url session instance
+            let session = URLSession.shared
+            // 3 // create a dataTask for fetching the contents of a url
+            let dataTask = session.dataTask(with: url,
+            // urlsession calls closure on background thread
+                completionHandler: { data, response, error in // completion handler is invoked once the data task has response from the server
+                    //print("On main thread? " + (Thread.current.isMainThread ? "Yes" : "No"))
+                    if let error = error {
+                        print("Failure! \(error.localizedDescription)")
+                    } else if let httpResponse = response as? HTTPURLResponse,
+                        httpResponse.statusCode == 200 {
+                        if let data = data {
+                            self.searchResults = self.parse(data: data) // parse the dictionary contents into SearchResult objects
+                            self.searchResults.sort(by: <) // sort a...z
+                            DispatchQueue.main.async { // switch back to main thread
+                                // ui updating, so isLoading = False,
+                                self.isLoading = false
+                                self.tableView.reloadData() // reload the tableView
+                            }
+                            return
+                        }
                     }
-                    return
-                } }
+                    else {
+                        DispatchQueue.main.async {
+                            self.hasSearched = false
+                            self.isLoading = false
+                            self.tableView.reloadData() // reload table with nothing in it
+                            self.showNetworkError() // show error message
+                        }
+                        print("Failure! \(response!)")
+                    }
+            })
+            // 5
+            dataTask.resume()
         }
     }
+    
     func position(for bar: UIBarPositioning) -> UIBarPosition {
         return .topAttached // status bar same as search bar color
     }
