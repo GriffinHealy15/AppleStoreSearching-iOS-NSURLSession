@@ -33,21 +33,46 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="FZz-Ia-UPH"/>
                                 </connections>
                             </searchBar>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Jd0-jG-d1L">
+                                <rect key="frame" x="0.0" y="76" width="320" height="44"/>
+                                <items>
+                                    <navigationItem id="HlT-Q4-lk4">
+                                        <nil key="title"/>
+                                        <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" id="Rl9-pp-fSK">
+                                            <rect key="frame" x="10" y="7" width="300" height="30"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <segments>
+                                                <segment title="All"/>
+                                                <segment title="Music"/>
+                                                <segment title="Software"/>
+                                                <segment title="E-books"/>
+                                            </segments>
+                                            <connections>
+                                                <action selector="segmentChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="Yje-nq-c2f"/>
+                                            </connections>
+                                        </segmentedControl>
+                                    </navigationItem>
+                                </items>
+                            </navigationBar>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="Ool-VX-m48" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="2n9-wd-X4o"/>
+                            <constraint firstItem="Jd0-jG-d1L" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="7AT-k7-Fpd"/>
                             <constraint firstItem="858-md-JYI" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="KPI-Xs-pMg"/>
+                            <constraint firstItem="Jd0-jG-d1L" firstAttribute="top" secondItem="Ool-VX-m48" secondAttribute="bottom" id="isB-hw-q2Z"/>
                             <constraint firstItem="Ool-VX-m48" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="lwS-k2-UKr"/>
                             <constraint firstItem="858-md-JYI" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="pQ3-Vc-w2q"/>
                             <constraint firstItem="858-md-JYI" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="psL-G9-yUs"/>
                             <constraint firstItem="858-md-JYI" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="rLw-Kx-DMP"/>
                             <constraint firstItem="Ool-VX-m48" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="vhC-zR-plj"/>
+                            <constraint firstItem="Jd0-jG-d1L" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="wIu-3m-gnA"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
                         <outlet property="searchBar" destination="Ool-VX-m48" id="zzv-m6-OgD"/>
+                        <outlet property="segmentedControl" destination="Rl9-pp-fSK" id="3Zc-5v-4fs"/>
                         <outlet property="tableView" destination="858-md-JYI" id="rcx-Po-7Eg"/>
                     </connections>
                 </viewController>

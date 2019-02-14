@@ -14,6 +14,15 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var searchBar: UISearchBar! // connects to UISearchBar in storyboard
     @IBOutlet weak var tableView: UITableView!
  
+    
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    // segment in storyboard tells this function their linked and for controller to run this method
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+        performSearch()
+    }
+    
+    
     // Below: think of as empty array that can contain many SearchResult objects
     var searchResults = [SearchResult]() // hold instances of SearchResult (several SearchResult())
     var hasSearched = false // bool to see if we tried a search yet
@@ -25,8 +34,8 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.becomeFirstResponder() // open the keyboard right away
-        // tell the tableView to add 20 point margin for status bar + 44 point margin for search bar
-        tableView.contentInset = UIEdgeInsets(top: 64, left: 0,
+        // tell the tableView to add 20 point margin for status bar + 44 point margin for search bar + 44 point margin for navigation bar with segment control
+        tableView.contentInset = UIEdgeInsets(top: 108, left: 0,
                                               bottom: 0, right: 0)
         // load the nib file for use in code
         var cellNib = UINib(nibName: TableView.CellIdentifiers.searchResultCell, bundle: nil)
@@ -54,13 +63,20 @@ class SearchViewController: UIViewController {
         }
     }
     // MARK:- Helper Methods
-    func iTunesURL(searchText: String) -> URL { // get url
-        let encodedText = searchText.addingPercentEncoding( // encode the search text with UTF-8
+    func iTunesURL(searchText: String, category: Int) -> URL {
+        let kind: String
+        switch category {
+        case 1: kind = "musicTrack"
+        case 2: kind = "software"
+        case 3: kind = "ebook"
+        default: kind = ""
+        }
+        let encodedText = searchText.addingPercentEncoding(
             withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
+        let urlString = "https://itunes.apple.com/search?" +
+        "term=\(encodedText)&limit=200&entity=\(kind)"
         let url = URL(string: urlString)
-        return url!
-    }
+        return url! }
     
     func parse(data: Data) -> [SearchResult] { // with retrieved data, parse the retrieved data, return searchresult object
         do {
@@ -87,8 +103,12 @@ class SearchViewController: UIViewController {
 // this (SearchViewController) declares itself a delegate for the search bar
 // whenever the search bar is clicked, this controller implements searchBarSearchButtonClicked as to abide to the delegate protocol. The search bar passes the clicked (searched) text to this delegate method
 extension SearchViewController: UISearchBarDelegate {
-    // tells delegate 'Search' button was pressed
+    // search bar tells us when it is clicked because we (controller) are its delegate
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        performSearch()
+    }
+    // tells delegate 'Search' button was pressed
+    func performSearch() {
         if !searchBar.text!.isEmpty { // if searchBar has text in it when 'Search' clicked
             searchBar.resignFirstResponder() // hide keyboard
             dataTask?.cancel() // cancel active dataTask, thanks to optional chaining if no search has been done yet and dataTask is still nil, cancel() call is ignored
@@ -97,7 +117,7 @@ extension SearchViewController: UISearchBarDelegate {
             hasSearched = true
             searchResults = []
             // 1 create url object
-            let url = iTunesURL(searchText: searchBar.text!)
+            let url = iTunesURL(searchText: searchBar.text!, category: segmentedControl.selectedSegmentIndex)
             // 2 get a shared url session instance
             let session = URLSession.shared
             // 3 // create a dataTask for fetching the contents of a url
