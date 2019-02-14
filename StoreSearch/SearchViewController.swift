@@ -19,6 +19,8 @@ class SearchViewController: UIViewController {
     var hasSearched = false // bool to see if we tried a search yet
     var isLoading = false // bool to see if we are in a network search
     //var count : Int = 0
+    var dataTask: URLSessionDataTask?
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,6 +91,7 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if !searchBar.text!.isEmpty { // if searchBar has text in it when 'Search' clicked
             searchBar.resignFirstResponder() // hide keyboard
+            dataTask?.cancel() // cancel active dataTask, thanks to optional chaining if no search has been done yet and dataTask is still nil, cancel() call is ignored
             isLoading = true  // set isLoading to true because we now are going to network search
             tableView.reloadData() // reload the tableView, tableView will be asked to be reloaded
             hasSearched = true
@@ -98,13 +101,15 @@ extension SearchViewController: UISearchBarDelegate {
             // 2 get a shared url session instance
             let session = URLSession.shared
             // 3 // create a dataTask for fetching the contents of a url
-            let dataTask = session.dataTask(with: url,
+            dataTask = session.dataTask(with: url,
             // urlsession calls closure on background thread
                 completionHandler: { data, response, error in // completion handler is invoked once the data task has response from the server
                     //print("On main thread? " + (Thread.current.isMainThread ? "Yes" : "No"))
-                    if let error = error {
-                        print("Failure! \(error.localizedDescription)")
-                    } else if let httpResponse = response as? HTTPURLResponse,
+                    
+                    if let error = error as NSError?, error.code == -999 {
+                      return  // Search was cancelled
+                    }
+                    else if let httpResponse = response as? HTTPURLResponse,
                         httpResponse.statusCode == 200 {
                         if let data = data {
                             self.searchResults = self.parse(data: data) // parse the dictionary contents into SearchResult objects
@@ -128,7 +133,7 @@ extension SearchViewController: UISearchBarDelegate {
                     }
             })
             // 5
-            dataTask.resume()
+            dataTask?.resume()
         }
     }
     
