@@ -16,6 +16,7 @@
 		995D21A52211E57D00522926 /* SearchResultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995D21A42211E57D00522926 /* SearchResultCell.swift */; };
 		995D21A72211EAB600522926 /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 995D21A62211EAB600522926 /* NothingFoundCell.xib */; };
 		995D21A9221494D000522926 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 995D21A8221494D000522926 /* LoadingCell.xib */; };
+		995D21AB2215ED1C00522926 /* UIImageView+DownloadImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995D21AA2215ED1C00522926 /* UIImageView+DownloadImage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		995D21A42211E57D00522926 /* SearchResultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultCell.swift; sourceTree = "<group>"; };
 		995D21A62211EAB600522926 /* NothingFoundCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 		995D21A8221494D000522926 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
+		995D21AA2215ED1C00522926 /* UIImageView+DownloadImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+DownloadImage.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 				995D21A42211E57D00522926 /* SearchResultCell.swift */,
 				994D3066220E1FDF00E3219F /* SearchResultCell.xib */,
 				994D3054220DE48100E3219F /* SearchViewController.swift */,
+				995D21AA2215ED1C00522926 /* UIImageView+DownloadImage.swift */,
 			);
 			path = StoreSearch;
 			sourceTree = "<group>";
@@ -153,6 +156,7 @@
 				994D3065220E038200E3219F /* SearchResult.swift in Sources */,
 				995D21A52211E57D00522926 /* SearchResultCell.swift in Sources */,
 				994D3053220DE48100E3219F /* AppDelegate.swift in Sources */,
+				995D21AB2215ED1C00522926 /* UIImageView+DownloadImage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

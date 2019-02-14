@@ -199,15 +199,7 @@ UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier:
                 TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
             let searchResult = searchResults[indexPath.row] // get array value at indexes 0,1,2..
-            cell.nameLabel.text = searchResult.name
-            if searchResult.artist.isEmpty { // if artist is nil, meaning artistName not set
-                cell.artistNameLabel.text = "Unknown"
-            } else { // otherwise, set the label with artist + type
-                cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artist, searchResult.type)
-            }
-            //print("count \(count)")
-            //print("index \(indexPath)")
-            //count = count + 1;
+            cell.configure(for: searchResult)
             return cell
         } }
     func tableView(_ tableView: UITableView, // tableView tells us index of row selected
