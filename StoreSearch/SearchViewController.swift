@@ -62,6 +62,17 @@ class SearchViewController: UIViewController {
             static let loadingCell = "LoadingCell"
         }
     }
+    // MARK:- Navigation
+    override func prepare(for segue: UIStoryboardSegue,
+                          sender: Any?) {
+        if segue.identifier == "ShowDetail" { // if segue about to trigger is linked with "ShowDetail" identifier, that means the identifier leads to DetailViewController
+            let detailViewController = segue.destination
+                as! DetailViewController
+            let indexPath = sender as! IndexPath // segue sends along index path of selected row
+            let searchResult = searchResults[indexPath.row] //get searchResult object at index path
+            detailViewController.searchResult = searchResult // pass searchResult object to DetailView controller. We access searchResult property of DetailView controller with the above line and set it
+        }
+    }
     // MARK:- Helper Methods
     func iTunesURL(searchText: String, category: Int) -> URL {
         let kind: String
@@ -205,6 +216,7 @@ UITableViewDataSource {
     func tableView(_ tableView: UITableView, // tableView tells us index of row selected
                    didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true) // deselect the row of that index
+        performSegue(withIdentifier: "ShowDetail", sender: indexPath) // when a row is selected, trigger a segue with "ShowDetail" identifier. Send the indexPath along
     }
     func tableView(_ tableView: UITableView,
                    willSelectRowAt indexPath: IndexPath) -> IndexPath? {
