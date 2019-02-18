@@ -23,7 +23,7 @@ class DetailViewController: UIViewController {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         modalPresentationStyle = .custom
-        transitioningDelegate = self // set transitioningDelegate to this view controller
+        transitioningDelegate = self // set transitioningDelegate to this view controller now
     }
     
     deinit { // deinit is called whenever the object instance is deallocated and its memory is reclaimed. That happens after the user closes the DetailViewController and the animation to remove it from the screen has completed
