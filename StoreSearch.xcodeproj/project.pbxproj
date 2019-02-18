@@ -15,6 +15,13 @@
 		994D305A220DE48300E3219F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 994D3059220DE48300E3219F /* Assets.xcassets */; };
 		994D3065220E038200E3219F /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994D3064220E038200E3219F /* SearchResult.swift */; };
 		994D3067220E1FDF00E3219F /* SearchResultCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 994D3066220E1FDF00E3219F /* SearchResultCell.xib */; };
+		99577E91221B2D4100FD9648 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99577E90221B2D4100FD9648 /* GradientView.swift */; };
+		99577E93221B383300FD9648 /* BounceAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99577E92221B383300FD9648 /* BounceAnimationController.swift */; };
+		99577E95221B4C9400FD9648 /* key.wav in Resources */ = {isa = PBXBuildFile; fileRef = 99577E94221B4C9400FD9648 /* key.wav */; };
+		99577E98221B4DDA00FD9648 /* Tic.wav in Resources */ = {isa = PBXBuildFile; fileRef = 99577E97221B4DDA00FD9648 /* Tic.wav */; };
+		99577E9A221B507C00FD9648 /* swoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = 99577E99221B507C00FD9648 /* swoosh.wav */; };
+		99577E9C221B513800FD9648 /* ching.wav in Resources */ = {isa = PBXBuildFile; fileRef = 99577E9B221B513800FD9648 /* ching.wav */; };
+		99577E9E221B613600FD9648 /* SlideOutAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99577E9D221B613600FD9648 /* SlideOutAnimationController.swift */; };
 		995D21A52211E57D00522926 /* SearchResultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995D21A42211E57D00522926 /* SearchResultCell.swift */; };
 		995D21A72211EAB600522926 /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 995D21A62211EAB600522926 /* NothingFoundCell.xib */; };
 		995D21A9221494D000522926 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 995D21A8221494D000522926 /* LoadingCell.xib */; };
@@ -32,6 +39,13 @@
 		994D305E220DE48300E3219F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		994D3064220E038200E3219F /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
 		994D3066220E1FDF00E3219F /* SearchResultCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SearchResultCell.xib; sourceTree = "<group>"; };
+		99577E90221B2D4100FD9648 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
+		99577E92221B383300FD9648 /* BounceAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BounceAnimationController.swift; sourceTree = "<group>"; };
+		99577E94221B4C9400FD9648 /* key.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = key.wav; sourceTree = "<group>"; };
+		99577E97221B4DDA00FD9648 /* Tic.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Tic.wav; sourceTree = "<group>"; };
+		99577E99221B507C00FD9648 /* swoosh.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = swoosh.wav; sourceTree = "<group>"; };
+		99577E9B221B513800FD9648 /* ching.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ching.wav; sourceTree = "<group>"; };
+		99577E9D221B613600FD9648 /* SlideOutAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideOutAnimationController.swift; sourceTree = "<group>"; };
 		995D21A42211E57D00522926 /* SearchResultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultCell.swift; sourceTree = "<group>"; };
 		995D21A62211EAB600522926 /* NothingFoundCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 		995D21A8221494D000522926 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
@@ -70,8 +84,10 @@
 			children = (
 				994D3052220DE48100E3219F /* AppDelegate.swift */,
 				994D3059220DE48300E3219F /* Assets.xcassets */,
+				99577E92221B383300FD9648 /* BounceAnimationController.swift */,
 				991E600822172500003A5692 /* DetailViewController.swift */,
 				991E600A22172A77003A5692 /* DimmingPresentationController.swift */,
+				99577E90221B2D4100FD9648 /* GradientView.swift */,
 				994D305E220DE48300E3219F /* Info.plist */,
 				995D21A8221494D000522926 /* LoadingCell.xib */,
 				994D3056220DE48100E3219F /* Main.storyboard */,
@@ -80,9 +96,22 @@
 				995D21A42211E57D00522926 /* SearchResultCell.swift */,
 				994D3066220E1FDF00E3219F /* SearchResultCell.xib */,
 				994D3054220DE48100E3219F /* SearchViewController.swift */,
+				99577E9D221B613600FD9648 /* SlideOutAnimationController.swift */,
+				99577E96221B4CA500FD9648 /* Sounds */,
 				995D21AA2215ED1C00522926 /* UIImageView+DownloadImage.swift */,
 			);
 			path = StoreSearch;
+			sourceTree = "<group>";
+		};
+		99577E96221B4CA500FD9648 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				99577E94221B4C9400FD9648 /* key.wav */,
+				99577E97221B4DDA00FD9648 /* Tic.wav */,
+				99577E99221B507C00FD9648 /* swoosh.wav */,
+				99577E9B221B513800FD9648 /* ching.wav */,
+			);
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,9 +172,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99577E9C221B513800FD9648 /* ching.wav in Resources */,
+				99577E95221B4C9400FD9648 /* key.wav in Resources */,
+				99577E9A221B507C00FD9648 /* swoosh.wav in Resources */,
 				994D305A220DE48300E3219F /* Assets.xcassets in Resources */,
 				995D21A9221494D000522926 /* LoadingCell.xib in Resources */,
 				994D3067220E1FDF00E3219F /* SearchResultCell.xib in Resources */,
+				99577E98221B4DDA00FD9648 /* Tic.wav in Resources */,
 				995D21A72211EAB600522926 /* NothingFoundCell.xib in Resources */,
 				994D3058220DE48100E3219F /* Main.storyboard in Resources */,
 			);
@@ -162,8 +195,11 @@
 				991E600B22172A77003A5692 /* DimmingPresentationController.swift in Sources */,
 				994D3065220E038200E3219F /* SearchResult.swift in Sources */,
 				995D21A52211E57D00522926 /* SearchResultCell.swift in Sources */,
+				99577E93221B383300FD9648 /* BounceAnimationController.swift in Sources */,
 				991E600922172500003A5692 /* DetailViewController.swift in Sources */,
 				994D3053220DE48100E3219F /* AppDelegate.swift in Sources */,
+				99577E91221B2D4100FD9648 /* GradientView.swift in Sources */,
+				99577E9E221B613600FD9648 /* SlideOutAnimationController.swift in Sources */,
 				995D21AB2215ED1C00522926 /* UIImageView+DownloadImage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

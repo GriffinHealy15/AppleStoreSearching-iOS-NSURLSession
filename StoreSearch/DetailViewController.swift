@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AudioToolbox
 
 class DetailViewController: UIViewController {
     
@@ -19,10 +20,11 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var priceButton: UIButton!
     var searchResult: SearchResult! // searchResult object set with prepareForSegue code
     var downloadTask: URLSessionDownloadTask?
+    var soundID: SystemSoundID = 0
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        modalPresentationStyle = .custom
+        modalPresentationStyle = .custom // .custom means system calls presentationController method where it ask us the delegate (set in line below) if we have a custom presentation controller to use instead ( we use DimmingPresentationController)
         transitioningDelegate = self // set transitioningDelegate to this view controller now
     }
     
@@ -35,6 +37,7 @@ class DetailViewController: UIViewController {
         super.viewDidLoad()
         view.tintColor = UIColor(red: 20/255, green: 160/255, // change tint color on whole view
                                  blue: 160/255, alpha: 1)
+        view.backgroundColor = UIColor.clear // set the view to clear because of the custom gradient
         popupView.layer.cornerRadius = 10 // ask popupView for its layer and set corner radius
         
         let gestureRecognizer = UITapGestureRecognizer(target: self, // if true, dismiss the view
@@ -82,26 +85,62 @@ class DetailViewController: UIViewController {
     
     // MARK:- Actions
     @IBAction func close() { // if close is tapped, button informs this action func to dismiss cntrl
-        dismiss(animated: true, completion: nil)
+        loadSoundEffect("swoosh.wav")
+        playSoundEffect()
+        dismiss(animated: true, completion: nil) // dismiss view controller presented modally
     }
     
     @IBAction func openInStore() {
         if let url = URL(string: searchResult.storeURL) { // get the searchResult object store url from trackViewUrl or collectionViewUrl
+            loadSoundEffect("ching.wav")
+            playSoundEffect()
             UIApplication.shared.open(url, options: [:], // product page will be opened for us
                                       completionHandler: nil)
         } }
-    
+    // MARK:- Sound effects
+    func loadSoundEffect(_ name: String) {
+        if let path = Bundle.main.path(forResource: name,
+                                       ofType: nil) {
+            let fileURL = URL(fileURLWithPath: path, isDirectory: false)
+            let error = AudioServicesCreateSystemSoundID(
+                fileURL as CFURL, &soundID)
+            if error != kAudioServicesNoError {
+                print("Error code \(error) loading sound: \(path)")
+            }
+        } }
+    func unloadSoundEffect() {
+        AudioServicesDisposeSystemSoundID(soundID)
+        soundID = 0 }
+    func playSoundEffect() {
+        AudioServicesPlaySystemSound(soundID)
+    }
 }
 
+// we (this controller) are the delegate for transitions, so when when happens, we implement the functions where we say which
 extension DetailViewController:
 UIViewControllerTransitioningDelegate {
-    func presentationController(
+    // system calls this method because we use UIModalPresentationStyle.custom
+    func presentationController( // system ask us, the delegate, for custom presentation controller
         forPresented presented: UIViewController,
         presenting: UIViewController?, source: UIViewController) ->
         UIPresentationController? {
             return DimmingPresentationController( // tell uikit to use dimmingpresentationcontroller
                 presentedViewController: presented, presenting: presenting)
-    } }
+    }
+    func animationController(forPresented presented: // ask us, the delegate, for the transition animator object when presenting a view controller
+        UIViewController, presenting: UIViewController,
+                          source: UIViewController) ->
+        UIViewControllerAnimatedTransitioning? { // we implement this protocol method here
+           // implementation of that protocol above must animate the appearance of the presented view controller’s view onscreen.
+            return BounceAnimationController() // tell transition controller use this new animation controller instead of default
+    }
+    // Asks delegate (this controller) for the transition animator object to use when dismissing the view controller
+    // This simply overrides the animation controller to be used when a view controller is dismissed.
+    func animationController(forDismissed dismissed:
+        UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return SlideOutAnimationController()
+    }
+}
 
 extension DetailViewController: UIGestureRecognizerDelegate { // gesture recognizer delegate
     func gestureRecognizer(

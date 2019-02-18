@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AudioToolbox
 
 class SearchViewController: UIViewController {
     
@@ -19,6 +20,9 @@ class SearchViewController: UIViewController {
     
     // segment in storyboard tells this function their linked and for controller to run this method
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+        loadSoundEffect("Tic.wav")
+        playSoundEffect()
+        //print(segmentedControl.selectedSegmentIndex)
         performSearch()
     }
     
@@ -29,6 +33,7 @@ class SearchViewController: UIViewController {
     var isLoading = false // bool to see if we are in a network search
     //var count : Int = 0
     var dataTask: URLSessionDataTask?
+    var soundID: SystemSoundID = 0
 
 
     override func viewDidLoad() {
@@ -53,6 +58,9 @@ class SearchViewController: UIViewController {
         tableView.register(cellNib, forCellReuseIdentifier: // register the nib with tableview
             // tableView can now access the nib cell when asked to
             TableView.CellIdentifiers.loadingCell)
+        
+        // this makes it so whenever this controller opens we want to be notified of a content size change like bigger or smaller font
+        listenForContentSizeChangeNotification() // when this view controller opens, call listen
     }
     
     struct TableView {
@@ -107,6 +115,36 @@ class SearchViewController: UIViewController {
                                    handler: nil)
         present(alert, animated: true, completion: nil) // present alert
         alert.addAction(action) // attaches action object to alert or action sheet
+    }
+    
+    // MARK:- Sound effects
+    func loadSoundEffect(_ name: String) {
+        if let path = Bundle.main.path(forResource: name,
+                                       ofType: nil) {
+            let fileURL = URL(fileURLWithPath: path, isDirectory: false)
+            let error = AudioServicesCreateSystemSoundID(
+                fileURL as CFURL, &soundID)
+            if error != kAudioServicesNoError {
+                print("Error code \(error) loading sound: \(path)")
+            }
+        } }
+    func unloadSoundEffect() {
+        AudioServicesDisposeSystemSoundID(soundID)
+        soundID = 0 }
+    func playSoundEffect() {
+        AudioServicesPlaySystemSound(soundID)
+    }
+    
+    // MARK:- Notification listen for size change
+    func listenForContentSizeChangeNotification() {
+        NotificationCenter.default.addObserver( // tell notification center we want to be notified whenever a UIContentSizeCategory.didChangeNotification is posted. didChangeNotification is posted when user changes preffered content size setting, and we are told about it
+            forName: UIContentSizeCategory.didChangeNotification,
+            object: nil,
+            queue: OperationQueue.main) { [weak self] _ in
+                guard let weakSelf = self else { return }
+                weakSelf.tableView.reloadData()
+                print("*** FontSizeDidChange. Reloaded tableView")
+        }
     }
 }
 
@@ -193,6 +231,10 @@ UITableViewDataSource {
             return searchResults.count // return the amount of objects in searchResults[]
         }
     }
+    
+    //func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+      //  return 100
+   // }
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if isLoading { // if loading searches, isLoading is set to true
@@ -215,6 +257,8 @@ UITableViewDataSource {
         } }
     func tableView(_ tableView: UITableView, // tableView tells us index of row selected
                    didSelectRowAt indexPath: IndexPath) {
+        loadSoundEffect("key.wav")
+        playSoundEffect()
         tableView.deselectRow(at: indexPath, animated: true) // deselect the row of that index
         performSegue(withIdentifier: "ShowDetail", sender: indexPath) // when a row is selected, trigger a segue with "ShowDetail" identifier. Send the indexPath along
     }
