@@ -17,13 +17,14 @@ UIViewControllerAnimatedTransitioning {
     }
     func animateTransition(using transitionContext: // the animation
         UIViewControllerContextTransitioning) {
-        if let fromView = transitionContext.view(forKey:
+        if let fromView = transitionContext.view(forKey: // view to animate
             UITransitionContextViewKey.from) {
             let containerView = transitionContext.containerView
-            let time = transitionDuration(using: transitionContext) // asl for 0.3 from above
+            let time = transitionDuration(using: transitionContext) // ask for 0.3 from above
             UIView.animate(withDuration: time, animations: {
                 fromView.center.y -= containerView.bounds.size.height // take center y position and subtract container view height (406-812 = -406)
                 // fromView.center.y has a new placement of -406 on the y pos
+                fromView.transform = CGAffineTransform(rotationAngle: .pi)
                 fromView.transform = CGAffineTransform(scaleX: 0.25,  y: 0.25) // reduce size to half
             }, completion: { finished in
             transitionContext.completeTransition(finished)

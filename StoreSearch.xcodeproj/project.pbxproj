@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9918F949221C6EEF0017E78D /* LandscapeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9918F948221C6EEF0017E78D /* LandscapeViewController.swift */; };
+		9918F94B221DDA7C0017E78D /* FadeOutAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9918F94A221DDA7C0017E78D /* FadeOutAnimationController.swift */; };
 		991E600922172500003A5692 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991E600822172500003A5692 /* DetailViewController.swift */; };
 		991E600B22172A77003A5692 /* DimmingPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991E600A22172A77003A5692 /* DimmingPresentationController.swift */; };
 		994D3053220DE48100E3219F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994D3052220DE48100E3219F /* AppDelegate.swift */; };
@@ -29,6 +31,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9918F948221C6EEF0017E78D /* LandscapeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeViewController.swift; sourceTree = "<group>"; };
+		9918F94A221DDA7C0017E78D /* FadeOutAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FadeOutAnimationController.swift; sourceTree = "<group>"; };
 		991E600822172500003A5692 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		991E600A22172A77003A5692 /* DimmingPresentationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimmingPresentationController.swift; sourceTree = "<group>"; };
 		994D304F220DE48100E3219F /* StoreSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoreSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -66,8 +70,8 @@
 		994D3046220DE48100E3219F = {
 			isa = PBXGroup;
 			children = (
-				994D3051220DE48100E3219F /* StoreSearch */,
 				994D3050220DE48100E3219F /* Products */,
+				994D3051220DE48100E3219F /* StoreSearch */,
 			);
 			sourceTree = "<group>";
 		};
@@ -87,8 +91,10 @@
 				99577E92221B383300FD9648 /* BounceAnimationController.swift */,
 				991E600822172500003A5692 /* DetailViewController.swift */,
 				991E600A22172A77003A5692 /* DimmingPresentationController.swift */,
+				9918F94A221DDA7C0017E78D /* FadeOutAnimationController.swift */,
 				99577E90221B2D4100FD9648 /* GradientView.swift */,
 				994D305E220DE48300E3219F /* Info.plist */,
+				9918F948221C6EEF0017E78D /* LandscapeViewController.swift */,
 				995D21A8221494D000522926 /* LoadingCell.xib */,
 				994D3056220DE48100E3219F /* Main.storyboard */,
 				995D21A62211EAB600522926 /* NothingFoundCell.xib */,
@@ -193,9 +199,11 @@
 			files = (
 				994D3055220DE48100E3219F /* SearchViewController.swift in Sources */,
 				991E600B22172A77003A5692 /* DimmingPresentationController.swift in Sources */,
+				9918F94B221DDA7C0017E78D /* FadeOutAnimationController.swift in Sources */,
 				994D3065220E038200E3219F /* SearchResult.swift in Sources */,
 				995D21A52211E57D00522926 /* SearchResultCell.swift in Sources */,
 				99577E93221B383300FD9648 /* BounceAnimationController.swift in Sources */,
+				9918F949221C6EEF0017E78D /* LandscapeViewController.swift in Sources */,
 				991E600922172500003A5692 /* DetailViewController.swift in Sources */,
 				994D3053220DE48100E3219F /* AppDelegate.swift in Sources */,
 				99577E91221B2D4100FD9648 /* GradientView.swift in Sources */,

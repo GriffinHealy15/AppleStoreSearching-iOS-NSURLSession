@@ -32,6 +32,11 @@ class DetailViewController: UIViewController {
         print("deinit \(self)")
         downloadTask?.cancel() // cancel downloadTask if view is deinitialized
     }
+    
+    enum AnimationStyle {
+        case slide
+        case fade }
+    var dismissStyle = AnimationStyle.fade
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,6 +92,7 @@ class DetailViewController: UIViewController {
     @IBAction func close() { // if close is tapped, button informs this action func to dismiss cntrl
         loadSoundEffect("swoosh.wav")
         playSoundEffect()
+        dismissStyle = .slide
         dismiss(animated: true, completion: nil) // dismiss view controller presented modally
     }
     
@@ -136,9 +142,14 @@ UIViewControllerTransitioningDelegate {
     }
     // Asks delegate (this controller) for the transition animator object to use when dismissing the view controller
     // This simply overrides the animation controller to be used when a view controller is dismissed.
-    func animationController(forDismissed dismissed:
+    func animationController(forDismissed dismissed: // function called when dismissed() is called
         UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return SlideOutAnimationController()
+        switch dismissStyle {
+        case .slide: // .slide is set everytime close() function is run
+            return SlideOutAnimationController()
+        case .fade: // default is .fade
+            return FadeOutAnimationController()
+        }
     }
 }
 

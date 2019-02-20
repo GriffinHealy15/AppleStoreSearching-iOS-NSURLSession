@@ -14,8 +14,6 @@ class SearchViewController: UIViewController {
     // weak vars prevented from deallocation by the superview (superview has strong reference)
     @IBOutlet weak var searchBar: UISearchBar! // connects to UISearchBar in storyboard
     @IBOutlet weak var tableView: UITableView!
- 
-    
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     // segment in storyboard tells this function their linked and for controller to run this method
@@ -34,6 +32,7 @@ class SearchViewController: UIViewController {
     //var count : Int = 0
     var dataTask: URLSessionDataTask?
     var soundID: SystemSoundID = 0
+    var landscapeVC: LandscapeViewController?
 
 
     override func viewDidLoad() {
@@ -61,6 +60,18 @@ class SearchViewController: UIViewController {
         
         // this makes it so whenever this controller opens we want to be notified of a content size change like bigger or smaller font
         listenForContentSizeChangeNotification() // when this view controller opens, call listen
+    }
+    
+    override func willTransition( // called whenever size change (i.e. horizontal orientaiton mode)
+        to newCollection: UITraitCollection,
+        with coordinator: UIViewControllerTransitionCoordinator) {
+        super.willTransition(to: newCollection, with: coordinator)
+        switch newCollection.verticalSizeClass {
+        case .compact: // if vertical size class is .compact we are transitioning to horizontal
+            showLandscape(with: coordinator) // show landscape by calling the method
+        case .regular, .unspecified: // if vertical size class is about to be .regular
+            hideLandscape(with: coordinator) // then we are going into portrait mode, so hide
+        }
     }
     
     struct TableView {
@@ -116,6 +127,45 @@ class SearchViewController: UIViewController {
         present(alert, animated: true, completion: nil) // present alert
         alert.addAction(action) // attaches action object to alert or action sheet
     }
+    // automatically called with willTransition
+    func showLandscape(with coordinator: // add landscape view controller as subview to parent
+        // 1
+        UIViewControllerTransitionCoordinator) {
+        guard landscapeVC == nil else { return } // landscape nil, if has value then return
+        // 2
+        landscapeVC = storyboard!.instantiateViewController(
+            withIdentifier: "LandscapeViewController") // find scene with identifier to instantiate
+            as? LandscapeViewController
+        if let controller = landscapeVC { // unwrap the optional
+            // 3
+            controller.view.frame = view.bounds // the frame of landscapeVC is size of SearchView
+            controller.view.alpha = 0 // start alpha as transparent
+            // 4
+            // Landscape screen “contained” in its parent view controller, and therefore owned and managed by the parent — it isn't independent like a modal screen.
+            view.addSubview(controller.view) // add landscapeVC as subview on top of table, search
+            addChild(controller)
+            coordinator.animate(alongsideTransition: { _ in
+                controller.view.alpha = 1
+                self.searchBar.resignFirstResponder() // hide keyboard
+                if (self.presentedViewController != nil) {
+                    self.dismiss(animated: true, completion: nil) // dismisses the pop-up
+                }
+            }, completion: { _ in // completion handler after animation is complete
+                controller.didMove(toParent: self) // tell landscapeVC its parent is SearchView
+            })
+        } }
+    func hideLandscape(with coordinator: // remove subview from the parent
+        UIViewControllerTransitionCoordinator) {
+        if let controller = landscapeVC { // if has value, continue to hiding
+            controller.willMove(toParent: nil) // tell landscapeVC it is leaving and has no parent
+            coordinator.animate(alongsideTransition: { _ in
+                controller.view.alpha = 0 // set from 1 to 0 (transparent)
+            }, completion: { _ in // completion handler after animation is complete
+                controller.view.removeFromSuperview() // remove the view from the screen here
+                controller.removeFromParent() // dispose of view controller
+                self.landscapeVC = nil // remove strong references to landscapeVC
+            })
+        } }
     
     // MARK:- Sound effects
     func loadSoundEffect(_ name: String) {

@@ -10,10 +10,12 @@ import UIKit
 class GradientView: UIView {
     override init(frame: CGRect) { // create gradient view instance
         super.init(frame: frame) // frame is passed from dimmingView.frame = containerView!.bounds  in DimmingPresentationController
+        autoresizingMask = [.flexibleWidth , .flexibleHeight] // change size to match superview size when superview rotates, etc.
         backgroundColor = UIColor.clear
     }
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        autoresizingMask = [.flexibleWidth , .flexibleHeight]
         backgroundColor = UIColor.clear
     }
     override func draw(_ rect: CGRect) {
