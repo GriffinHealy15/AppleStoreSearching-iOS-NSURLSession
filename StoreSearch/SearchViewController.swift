@@ -104,7 +104,7 @@ class SearchViewController: UIViewController {
         let encodedText = searchText.addingPercentEncoding(
             withAllowedCharacters: CharacterSet.urlQueryAllowed)!
         let urlString = "https://itunes.apple.com/search?" +
-        "term=\(encodedText)&limit=200&entity=\(kind)"
+        "term=\(encodedText)&limit=70&entity=\(kind)"
         let url = URL(string: urlString)
         return url! }
     
@@ -140,6 +140,7 @@ class SearchViewController: UIViewController {
             // 3
             controller.view.frame = view.bounds // the frame of landscapeVC is size of SearchView
             controller.view.alpha = 0 // start alpha as transparent
+            controller.searchResults = searchResults // set LandscapeVC with searchResults object
             // 4
             // Landscape screen “contained” in its parent view controller, and therefore owned and managed by the parent — it isn't independent like a modal screen.
             view.addSubview(controller.view) // add landscapeVC as subview on top of table, search
