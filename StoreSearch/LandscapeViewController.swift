@@ -8,13 +8,22 @@
 
 import UIKit
 
+// landscape
 class LandscapeViewController: UIViewController {
     
     @IBOutlet weak var scrollView: UIScrollView! // outlet to scrollView
     @IBOutlet weak var pageControl: UIPageControl! // outlet to pageControl
-    var searchResults = [SearchResult]() // array of SearchResult objects
+    var search: Search! // array of SearchResult objects
     private var firstTime = true
-
+    private var downloads = [URLSessionDownloadTask]() // keep track of download tasks
+    
+    deinit {
+        print("deinit \(self)")
+        for task in downloads { // cancel any tasks in downloads, remember we added a task in downloadImage
+            task.cancel()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Remove constraints from main view
@@ -41,16 +50,17 @@ class LandscapeViewController: UIViewController {
                                    height: pageControl.frame.size.height)
         if firstTime {
             firstTime = false
-            tileButtons(searchResults)
+            tileButtons(search.searchResults)
         }
     }
     
     // MARK:- Actions
     // pageControll informs this function it was tapped
     @IBAction func pageChanged(_ sender: UIPageControl) { // get page tapped (current page)
-        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: { self.scrollView.contentOffset = CGPoint( // animate scrollview moving
-            x: self.scrollView.bounds.size.width * // set x to width * currentPage (i.e. 768 * 2 = 1536)
-                CGFloat(sender.currentPage), y: 0) }, completion: nil)
+        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations:
+            { self.scrollView.contentOffset = CGPoint( // animate scrollview moving
+            // set x to width * currentPage (i.e. 768 * 2 = 1536)
+            x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0) }, completion: nil)
     }
     
     // MARK:- Private Methods
@@ -95,17 +105,15 @@ class LandscapeViewController: UIViewController {
         default:
             break
         }
-        // TODO: more to come here
         // Add the buttons
         var row = 0
         var column = 0
         var x = marginX
         // contains next index, and the result object
-        for (index, result) in searchResults.enumerated() { // loop through all indexes and creates button for them
+        for (_, result) in searchResults.enumerated() { // loop through all indexes and creates button for them
             // 1
-            let button = UIButton(type: .system) // create button
-            button.backgroundColor = UIColor.white
-            button.setTitle("\(index)", for: .normal) // set title for eac
+            let button = UIButton(type: .custom)
+            downloadImage(for: result, andPlaceOn: button) // set buttons background image
             // 2 set frame for the button
             button.frame = CGRect(x: x + paddingHorz,
                                   y: marginY + CGFloat(row)*itemHeight + paddingVert,
@@ -134,16 +142,33 @@ class LandscapeViewController: UIViewController {
         pageControl.numberOfPages = numPages // set page to numPages found
         pageControl.currentPage = 0
     }
+    
+    private func downloadImage(for searchResult: SearchResult,
+                               andPlaceOn button: UIButton) {
+        if let url = URL(string: searchResult.imageSmall) { // url instance with link to image
+            let task = URLSession.shared.downloadTask(with: url) { // task to download image
+                [weak button] url, response, error in // weak button incase deallocat
+                if error == nil, let url = url,
+                    let data = try? Data(contentsOf: url), // get data of image saved to disk
+                    let image = UIImage(data: data) { // put data into a uIImage
+                    DispatchQueue.main.async { // main queue
+                        if let button = button {
+                            button.setImage(image, for: .normal) // place image as buttons image
+                        }
+                    } }
+            }
+            task.resume()
+            downloads.append(task) // add task to downloads (list of download objs)
+        }
+    }
 }
 
-// extension to declare LandscapeViewControlelr a delegate to UIScrollView
+// extension to declare LandscapeViewController a delegate to UIScrollView
 extension LandscapeViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let width = scrollView.bounds.size.width
         // i.e. starts at point 364, when scroll 364 more points (were half way in current page)
         let page = Int((scrollView.contentOffset.x + width / 2) / width) // when content offset is halfway or more on the page it's on, it moves to next page
-            //print("scroll offset \(scrollView.contentOffset.x + width / 2)")
-            //print("width \(width)")
             pageControl.currentPage = page // tell pageControl of current page continuously
     }
 }

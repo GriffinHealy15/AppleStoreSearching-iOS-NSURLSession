@@ -26,11 +26,7 @@ class SearchViewController: UIViewController {
     
     
     // Below: think of as empty array that can contain many SearchResult objects
-    var searchResults = [SearchResult]() // hold instances of SearchResult (several SearchResult())
-    var hasSearched = false // bool to see if we tried a search yet
-    var isLoading = false // bool to see if we are in a network search
-    //var count : Int = 0
-    var dataTask: URLSessionDataTask?
+    private let search = Search()
     var soundID: SystemSoundID = 0
     var landscapeVC: LandscapeViewController?
 
@@ -88,36 +84,11 @@ class SearchViewController: UIViewController {
             let detailViewController = segue.destination
                 as! DetailViewController
             let indexPath = sender as! IndexPath // segue sends along index path of selected row
-            let searchResult = searchResults[indexPath.row] //get searchResult object at index path
+            let searchResult = search.searchResults[indexPath.row] //get searchResult object at index path
             detailViewController.searchResult = searchResult // pass searchResult object to DetailView controller. We access searchResult property of DetailView controller with the above line and set it
         }
     }
-    // MARK:- Helper Methods
-    func iTunesURL(searchText: String, category: Int) -> URL {
-        let kind: String
-        switch category {
-        case 1: kind = "musicTrack"
-        case 2: kind = "software"
-        case 3: kind = "ebook"
-        default: kind = ""
-        }
-        let encodedText = searchText.addingPercentEncoding(
-            withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        let urlString = "https://itunes.apple.com/search?" +
-        "term=\(encodedText)&limit=70&entity=\(kind)"
-        let url = URL(string: urlString)
-        return url! }
     
-    func parse(data: Data) -> [SearchResult] { // with retrieved data, parse the retrieved data, return searchresult object
-        do {
-            let decoder = JSONDecoder()
-            // use a JSONDecoder object to convert the response data from the server to a temporary ResultArray object from which you exctract the results property
-            let result = try decoder.decode(ResultArray.self, from:data)
-            return result.results // with the decoded data, we look at results property and get each result object from the data
-        } catch {
-            print("JSON Error: \(error)")
-            return [] }
-    }
     func showNetworkError() {
         let alert = UIAlertController(title: "Whoops...", // obj alert controller that displays msg
                                       message: "There was an error accessing the iTunes Store." +
@@ -140,7 +111,7 @@ class SearchViewController: UIViewController {
             // 3
             controller.view.frame = view.bounds // the frame of landscapeVC is size of SearchView
             controller.view.alpha = 0 // start alpha as transparent
-            controller.searchResults = searchResults // set LandscapeVC with searchResults object
+            controller.search = search // set LandscapeVC with searchResults object
             // 4
             // Landscape screen “contained” in its parent view controller, and therefore owned and managed by the parent — it isn't independent like a modal screen.
             view.addSubview(controller.view) // add landscapeVC as subview on top of table, search
@@ -207,54 +178,19 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         performSearch()
     }
-    // tells delegate 'Search' button was pressed
+
     func performSearch() {
-        if !searchBar.text!.isEmpty { // if searchBar has text in it when 'Search' clicked
-            searchBar.resignFirstResponder() // hide keyboard
-            dataTask?.cancel() // cancel active dataTask, thanks to optional chaining if no search has been done yet and dataTask is still nil, cancel() call is ignored
-            isLoading = true  // set isLoading to true because we now are going to network search
-            tableView.reloadData() // reload the tableView, tableView will be asked to be reloaded
-            hasSearched = true
-            searchResults = []
-            // 1 create url object
-            let url = iTunesURL(searchText: searchBar.text!, category: segmentedControl.selectedSegmentIndex)
-            // 2 get a shared url session instance
-            let session = URLSession.shared
-            // 3 // create a dataTask for fetching the contents of a url
-            dataTask = session.dataTask(with: url,
-            // urlsession calls closure on background thread
-                completionHandler: { data, response, error in // completion handler is invoked once the data task has response from the server
-                    //print("On main thread? " + (Thread.current.isMainThread ? "Yes" : "No"))
-                    
-                    if let error = error as NSError?, error.code == -999 {
-                      return  // Search was cancelled
-                    }
-                    else if let httpResponse = response as? HTTPURLResponse,
-                        httpResponse.statusCode == 200 {
-                        if let data = data {
-                            self.searchResults = self.parse(data: data) // parse the dictionary contents into SearchResult objects
-                            self.searchResults.sort(by: <) // sort a...z
-                            DispatchQueue.main.async { // switch back to main thread
-                                // ui updating, so isLoading = False,
-                                self.isLoading = false
-                                self.tableView.reloadData() // reload the tableView
-                            }
-                            return
-                        }
-                    }
-                    else {
-                        DispatchQueue.main.async {
-                            self.hasSearched = false
-                            self.isLoading = false
-                            self.tableView.reloadData() // reload table with nothing in it
-                            self.showNetworkError() // show error message
-                        }
-                        print("Failure! \(response!)")
-                    }
-            })
-            // 5
-            dataTask?.resume()
-        }
+        search.performSearch(for: searchBar.text!,
+         category: segmentedControl.selectedSegmentIndex,
+         // pass closure to performSearch in Search.swift class
+         completion: { success in // completion depending on success true or false
+         if !success { // if no success
+          self.showNetworkError()
+          }
+        self.tableView.reloadData()
+        })
+        tableView.reloadData()
+        searchBar.resignFirstResponder()
     }
     
     func position(for bar: UIBarPositioning) -> UIBarPosition {
@@ -270,16 +206,16 @@ UITableViewDataSource {
     // override not used like in previous apps we built because were using a regular view controller which does not have any tableView methods to override. We just say were the delegate of a tableview and were implementing the tableview delegate methods, UITableViewController has tableview delegate built in with tableView methods in the controller itself
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        if(isLoading == true) { // if loading is true, we are loading searches
+        if(search.isLoading == true) { // if loading is true, we are loading searches
             return 1 // we want to display 1 row with 1 cell that will show the "LoadingCell"
         }
-        else if (hasSearched != true) { // if haven't searched, return 0, so no cells created then
+        else if (search.hasSearched != true) { // if haven't searched, return 0, so no cells created then
             return 0
         }
-         else if searchResults.count == 0 { // if zero in searchResults[], then return 1 to put "Nothing"
+         else if search.searchResults.count == 0 { // if zero in searchResults[], then return 1 to put "Nothing"
             return 1
         } else {
-            return searchResults.count // return the amount of objects in searchResults[]
+            return search.searchResults.count // return the amount of objects in searchResults[]
         }
     }
     
@@ -288,21 +224,21 @@ UITableViewDataSource {
    // }
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if isLoading { // if loading searches, isLoading is set to true
+        if search.isLoading { // if loading searches, isLoading is set to true
             let cell = tableView.dequeueReusableCell(withIdentifier: // prepare "LoadingCell"
                 TableView.CellIdentifiers.loadingCell, for: indexPath)
             let spinner = cell.viewWithTag(100) as!
             UIActivityIndicatorView // look at cells tag 100, which is indicatorview
             spinner.startAnimating() // we tell spinner (indicatorview) to start spinning animation
             return cell }
-        else if searchResults.count == 0 { // if no results, put cell with text 'Nothing Found' in table
+        else if search.searchResults.count == 0 { // if no results, put cell with text 'Nothing Found' in table
             return tableView.dequeueReusableCell(withIdentifier:
                 TableView.CellIdentifiers.nothingFoundCell,
                                                  for: indexPath)
         } else { // otherwise, get the 'SearchResultCell' and set labels in the custom 'SearchResultCell.swift', which will update the SearchResultCell.nib we are displaying in the tableView
             let cell = tableView.dequeueReusableCell(withIdentifier:
                 TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
-            let searchResult = searchResults[indexPath.row] // get array value at indexes 0,1,2..
+            let searchResult = search.searchResults[indexPath.row] // get array value at indexes 0,1,2..
             cell.configure(for: searchResult)
             return cell
         } }
@@ -315,7 +251,7 @@ UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView,
                    willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if searchResults.count == 0 || isLoading { // if no results or is loading, don't allow row to be selected
+        if search.searchResults.count == 0 || search.isLoading { // if no results or is loading, don't allow row to be selected
             return nil
         } else {
             return indexPath
