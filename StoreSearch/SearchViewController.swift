@@ -80,13 +80,14 @@ class SearchViewController: UIViewController {
     // MARK:- Navigation
     override func prepare(for segue: UIStoryboardSegue,
                           sender: Any?) {
-        if segue.identifier == "ShowDetail" { // if segue about to trigger is linked with "ShowDetail" identifier, that means the identifier leads to DetailViewController
-            let detailViewController = segue.destination
-                as! DetailViewController
-            let indexPath = sender as! IndexPath // segue sends along index path of selected row
-            let searchResult = search.searchResults[indexPath.row] //get searchResult object at index path
-            detailViewController.searchResult = searchResult // pass searchResult object to DetailView controller. We access searchResult property of DetailView controller with the above line and set it
-        }
+        if segue.identifier == "ShowDetail" { // if the segue has this identfier
+            if case .results(let list) = search.state { // and state is .results
+                let detailViewController = segue.destination
+                    as! DetailViewController // this is our dest controller
+                let indexPath = sender as! IndexPath // get index of row
+                let searchResult = list[indexPath.row] // get item at the index
+                detailViewController.searchResult = searchResult // set searchResult
+            } }
     }
     
     func showNetworkError() {
@@ -180,8 +181,10 @@ extension SearchViewController: UISearchBarDelegate {
     }
 
     func performSearch() {
+        // take the index selected and convert raw value to value i.e. "Software", then pass category to performSearch function below
+        if let category = Search.Category(rawValue: segmentedControl.selectedSegmentIndex) {
         search.performSearch(for: searchBar.text!,
-         category: segmentedControl.selectedSegmentIndex,
+         category: category,
          // pass closure to performSearch in Search.swift class
          completion: { success in // completion depending on success true or false
          if !success { // if no success
@@ -189,6 +192,7 @@ extension SearchViewController: UISearchBarDelegate {
           }
         self.tableView.reloadData()
         })
+        }
         tableView.reloadData()
         searchBar.resignFirstResponder()
     }
@@ -204,18 +208,18 @@ extension SearchViewController: UITableViewDelegate,
 UITableViewDataSource {
     // below are required protocol methods, those that you need to implement to say "hey, i want to be your delegate, so you can pass me information. Tableview: "if you implement my methods, data is passed in them", is how it works really
     // override not used like in previous apps we built because were using a regular view controller which does not have any tableView methods to override. We just say were the delegate of a tableview and were implementing the tableview delegate methods, UITableViewController has tableview delegate built in with tableView methods in the controller itself
+    
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        if(search.isLoading == true) { // if loading is true, we are loading searches
-            return 1 // we want to display 1 row with 1 cell that will show the "LoadingCell"
-        }
-        else if (search.hasSearched != true) { // if haven't searched, return 0, so no cells created then
-            return 0
-        }
-         else if search.searchResults.count == 0 { // if zero in searchResults[], then return 1 to put "Nothing"
+        switch search.state { // get current state
+        case .notSearchedYet: // if state is set to this, we have done no search
+            return 0 // return 0 cells to display
+        case .loading: // is .loading return the one loading cell
             return 1
-        } else {
-            return search.searchResults.count // return the amount of objects in searchResults[]
+        case .noResults: // no results, return one cell with "Nothing Found" displayed
+            return 1
+        case .results(let list): // bind results array to temp variable list
+            return list.count // get count of the list array (results array)
         }
     }
     
@@ -224,38 +228,46 @@ UITableViewDataSource {
    // }
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if search.isLoading { // if loading searches, isLoading is set to true
-            let cell = tableView.dequeueReusableCell(withIdentifier: // prepare "LoadingCell"
-                TableView.CellIdentifiers.loadingCell, for: indexPath)
+        switch search.state { // get current state
+        case .notSearchedYet:
+            fatalError("Should never get here")
+        case .loading: // show loading cell
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: TableView.CellIdentifiers.loadingCell,
+                for: indexPath)
             let spinner = cell.viewWithTag(100) as!
-            UIActivityIndicatorView // look at cells tag 100, which is indicatorview
-            spinner.startAnimating() // we tell spinner (indicatorview) to start spinning animation
-            return cell }
-        else if search.searchResults.count == 0 { // if no results, put cell with text 'Nothing Found' in table
-            return tableView.dequeueReusableCell(withIdentifier:
-                TableView.CellIdentifiers.nothingFoundCell,
-                                                 for: indexPath)
-        } else { // otherwise, get the 'SearchResultCell' and set labels in the custom 'SearchResultCell.swift', which will update the SearchResultCell.nib we are displaying in the tableView
-            let cell = tableView.dequeueReusableCell(withIdentifier:
-                TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
-            let searchResult = search.searchResults[indexPath.row] // get array value at indexes 0,1,2..
+            UIActivityIndicatorView
+            spinner.startAnimating()
+            return cell
+        case .noResults: // show nothing found cell
+            return tableView.dequeueReusableCell(
+                withIdentifier: TableView.CellIdentifiers.nothingFoundCell,
+                for: indexPath)
+        case .results(let list): // show results cells
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: TableView.CellIdentifiers.searchResultCell,
+                for: indexPath) as! SearchResultCell
+            let searchResult = list[indexPath.row]
             cell.configure(for: searchResult)
             return cell
         } }
+    
+    func tableView(_ tableView: UITableView,
+                   willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        switch search.state { // if row selected, first find state
+        case .notSearchedYet, .loading, .noResults:
+            return nil
+        case .results: // if results (.results only when an item + in array)
+            return indexPath // return path of the index
+        }
+    }
+    
     func tableView(_ tableView: UITableView, // tableView tells us index of row selected
                    didSelectRowAt indexPath: IndexPath) {
         loadSoundEffect("key.wav")
         playSoundEffect()
         tableView.deselectRow(at: indexPath, animated: true) // deselect the row of that index
         performSegue(withIdentifier: "ShowDetail", sender: indexPath) // when a row is selected, trigger a segue with "ShowDetail" identifier. Send the indexPath along
-    }
-    func tableView(_ tableView: UITableView,
-                   willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if search.searchResults.count == 0 || search.isLoading { // if no results or is loading, don't allow row to be selected
-            return nil
-        } else {
-            return indexPath
-        }
     }
 }
 

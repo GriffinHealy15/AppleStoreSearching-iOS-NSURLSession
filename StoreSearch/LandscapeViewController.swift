@@ -49,8 +49,17 @@ class LandscapeViewController: UIViewController {
                                    width: safeFrame.size.width,
                                    height: pageControl.frame.size.height)
         if firstTime {
-            firstTime = false
-            tileButtons(search.searchResults)
+            firstTime = false // set to false, as it won't be first time next time
+            switch search.state { // get current state, case depending on state
+            case .notSearchedYet:
+                break
+            case .loading:
+                break
+            case .noResults:
+                break
+            case .results(let list): // if we got .results, set tiles up for all list
+                tileButtons(list)
+            }
         }
     }
     
