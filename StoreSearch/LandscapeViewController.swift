@@ -54,9 +54,9 @@ class LandscapeViewController: UIViewController {
             case .notSearchedYet:
                 break
             case .loading:
-                break
+                showSpinner() // show spinner
             case .noResults:
-                break
+                showNothingFoundLabel() // show "Nothing Found" label
             case .results(let list): // if we got .results, set tiles up for all list
                 tileButtons(list)
             }
@@ -70,6 +70,49 @@ class LandscapeViewController: UIViewController {
             { self.scrollView.contentOffset = CGPoint( // animate scrollview moving
             // set x to width * currentPage (i.e. 768 * 2 = 1536)
             x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0) }, completion: nil)
+    }
+    
+    @objc func buttonPressed(_ sender: UIButton) {
+        performSegue(withIdentifier: "ShowDetail", sender: sender)
+    }
+    
+    // MARK:- Public Methods
+    // this is invoked in SearchViewController incase closure executes and were already rotated to landscape, tell landscape search results are available
+    func searchResultsReceived() {
+        hideSpinner() // call hideSpinner
+        switch search.state { // get search object and states, .results contains objs
+        case .notSearchedYet, .loading:
+            break
+        case .noResults:
+            showNothingFoundLabel()
+        case .results(let list): // after tableView is reloaded in SearchController, we call this method to let LandscapeViewController set up its tile view
+            tileButtons(list) // set up tiles
+        }
+    }
+    private func showSpinner() {
+        let spinner = UIActivityIndicatorView(style: .whiteLarge)
+        spinner.center = CGPoint(x: scrollView.bounds.midX + 0.5,
+                                 y: scrollView.bounds.midY + 0.5)
+        spinner.tag = 1000
+        view.addSubview(spinner)
+        spinner.startAnimating()
+    }
+    private func hideSpinner() {
+        view.viewWithTag(1000)?.removeFromSuperview() // find this view, and remove
+    }
+    
+    private func showNothingFoundLabel() {
+        let label = UILabel(frame: CGRect.zero) // create label
+        label.text = "Nothing Found" // give text, color, background color
+        label.textColor = UIColor.white
+        label.backgroundColor = UIColor.clear
+        label.sizeToFit() // resize label to optimal size
+        var rect = label.frame // get rect of label frame
+        rect.size.width = ceil(rect.size.width/2) * 2 //to get even # when positioning
+        rect.size.height = ceil(rect.size.height/2) * 2  // make even
+        label.frame = rect // re-frame label with even bounds
+        label.center = CGPoint(x: scrollView.bounds.midX, y: scrollView.bounds.midY)
+                               view.addSubview(label)
     }
     
     // MARK:- Private Methods
@@ -119,9 +162,12 @@ class LandscapeViewController: UIViewController {
         var column = 0
         var x = marginX
         // contains next index, and the result object
-        for (_, result) in searchResults.enumerated() { // loop through all indexes and creates button for them
+        for (index, result) in searchResults.enumerated() { // loop through all indexes and creates button for them
             // 1
-            let button = UIButton(type: .custom)
+            let button = UIButton(type: .custom) // create button
+            button.tag = 2000 + index // give it a tag with index (so to know to the SearchResult object to pass to the pop-up, then the right item, song, etc. displays)
+            button.addTarget(self, action: #selector(buttonPressed),
+                        for: .touchUpInside)//button calls buttonPressed when tapped
             downloadImage(for: result, andPlaceOn: button) // set buttons background image
             // 2 set frame for the button
             button.frame = CGRect(x: x + paddingHorz,
@@ -151,6 +197,19 @@ class LandscapeViewController: UIViewController {
         pageControl.numberOfPages = numPages // set page to numPages found
         pageControl.currentPage = 0
     }
+    
+    // MARK:- Navigation
+    override func prepare(for segue: UIStoryboardSegue,
+                          sender: Any?) {
+        if segue.identifier == "ShowDetail" { // if segue triggered has this identfier
+            if case .results(let list) = search.state { // and state has .results
+                let detailViewController = segue.destination // set dest as detailview
+                    as! DetailViewController
+                // if button selected tag is 2007, we say 2007-2000 = 7, and that is the 7th index, where it stored the 7th object
+                let searchResult = list[(sender as! UIButton).tag - 2000] // get the list object at index of the button - 2000
+                detailViewController.searchResult = searchResult // set searchResult with the object at selected index
+            }
+        } }
     
     private func downloadImage(for searchResult: SearchResult,
                                andPlaceOn button: UIButton) {

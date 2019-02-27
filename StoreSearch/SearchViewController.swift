@@ -133,6 +133,9 @@ class SearchViewController: UIViewController {
             controller.willMove(toParent: nil) // tell landscapeVC it is leaving and has no parent
             coordinator.animate(alongsideTransition: { _ in
                 controller.view.alpha = 0 // set from 1 to 0 (transparent)
+                if self.presentedViewController != nil {
+                    self.dismiss(animated: true, completion: nil)
+                }
             }, completion: { _ in // completion handler after animation is complete
                 controller.view.removeFromSuperview() // remove the view from the screen here
                 controller.removeFromParent() // dispose of view controller
@@ -191,6 +194,8 @@ extension SearchViewController: UISearchBarDelegate {
           self.showNetworkError()
           }
         self.tableView.reloadData()
+        // below line ignored if still in portrait mode after search completes
+        self.landscapeVC?.searchResultsReceived() // inform landscape we have results
         })
         }
         tableView.reloadData()

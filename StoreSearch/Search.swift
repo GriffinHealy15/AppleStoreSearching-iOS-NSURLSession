@@ -6,6 +6,7 @@
 //  Copyright © 2019 Griffin Healy. All rights reserved.
 //
 
+import UIKit
 import Foundation
 
 typealias SearchComplete = (Bool) -> Void // convient name for data type
@@ -40,6 +41,7 @@ class Search {
     func performSearch(for text: String, category: Category, completion: @escaping SearchComplete) {
         if  !text.isEmpty { // if searchBar has text in it when 'Search' clicked
             dataTask?.cancel() // cancel active dataTask, thanks to optional chaining if no search has been done yet and dataTask is still nil, cancel() call is ignored
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
             state = .loading // state becomes .loading when search just starts
             // 1 create url object
             let url = iTunesURL(searchText: text, category: category)
@@ -72,6 +74,7 @@ class Search {
                     DispatchQueue.main.async {
                         self.state = newState
                         completion(success)
+                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
                     }
             })
             // 5
