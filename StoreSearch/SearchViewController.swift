@@ -29,11 +29,15 @@ class SearchViewController: UIViewController {
     private let search = Search()
     var soundID: SystemSoundID = 0
     var landscapeVC: LandscapeViewController?
-
+    weak var splitViewDetail: DetailViewController? 
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        searchBar.becomeFirstResponder() // open the keyboard right away
+        title = NSLocalizedString("Search", comment: "split view master button")
+        // if not iPad, open the keyboard right away
+        if UIDevice.current.userInterfaceIdiom != .pad {
+            searchBar.becomeFirstResponder()
+        }
         // tell the tableView to add 20 point margin for status bar + 44 point margin for search bar + 44 point margin for navigation bar with segment control
         tableView.contentInset = UIEdgeInsets(top: 108, left: 0,
                                               bottom: 0, right: 0)
@@ -86,12 +90,13 @@ class SearchViewController: UIViewController {
                     as! DetailViewController // this is our dest controller
                 let indexPath = sender as! IndexPath // get index of row
                 let searchResult = list[indexPath.row] // get item at the index
+                detailViewController.ispopup = true
                 detailViewController.searchResult = searchResult // set searchResult
             } }
     }
     
     func showNetworkError() {
-        let alert = UIAlertController(title: "Whoops...", // obj alert controller that displays msg
+        let alert = UIAlertController(title: NSLocalizedString("Whoops...", comment: "Error alert: title"), // obj alert controller that displays msg
                                       message: "There was an error accessing the iTunes Store." +
             " Please try again.", preferredStyle: .alert) // action taken when button pressed
         let action = UIAlertAction(title: "OK", style: .default,
@@ -142,6 +147,15 @@ class SearchViewController: UIViewController {
                 self.landscapeVC = nil // remove strong references to landscapeVC
             })
         } }
+    
+    private func hideMasterPane() { // hide master pane for portrait mode
+        UIView.animate(withDuration: 0.25, animations: {
+            /*Every view controller has a built-in splitViewController property that is non-nil if the view controller is currently inside a UISplitViewController.*/
+            self.splitViewController!.preferredDisplayMode =
+                .primaryHidden // animate, .primaryHidden hides main view (master)
+        }, completion: { _ in
+            self.splitViewController!.preferredDisplayMode = .automatic // restore master pane
+        }) }
     
     // MARK:- Sound effects
     func loadSoundEffect(_ name: String) {
@@ -267,12 +281,26 @@ UITableViewDataSource {
         }
     }
     
-    func tableView(_ tableView: UITableView, // tableView tells us index of row selected
+    func tableView(_ tableView: UITableView,
                    didSelectRowAt indexPath: IndexPath) {
         loadSoundEffect("key.wav")
         playSoundEffect()
-        tableView.deselectRow(at: indexPath, animated: true) // deselect the row of that index
-        performSegue(withIdentifier: "ShowDetail", sender: indexPath) // when a row is selected, trigger a segue with "ShowDetail" identifier. Send the indexPath along
-    }
+        searchBar.resignFirstResponder()
+        if view.window!.rootViewController!.traitCollection
+            .horizontalSizeClass == .compact { // iPhone's open pop-up view
+            tableView.deselectRow(at: indexPath, animated: true)
+            performSegue(withIdentifier: "ShowDetail",
+                         sender: indexPath)
+        } else {
+            if case .results(let list) = search.state {
+                // .allVisible applys to landscape, so if not all visible (in portrait, also using iPad) hide the master pane
+                if splitViewController!.displayMode != .allVisible {
+                    hideMasterPane() // hide the master pane. This is for when your using the iPad and select an item. Then the pane is hidden, and the popup view is shown
+                }
+                // iPad's set DetailViewController searchresult with correct object
+                // basically says, hey splitViewDetail (DetailViewController), I have a reference to you and I am setting your searchResult object with the selected rows cell's object
+                splitViewDetail?.searchResult = list[indexPath.row]
+            }
+        } }
 }
 

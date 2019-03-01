@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings
+  StoreSearch
+
+  Created by Griffin Healy on 2/27/19.
+  Copyright © 2019 Griffin Healy. All rights reserved.
+*/
+// if the iPhone language is set to 'Dutch', then this app will say for this file will be used, and the bundle name (overridden) to the name "Store Zoeker"
+CFBundleDisplayName = "Store Zoeker";

@@ -18,9 +18,14 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var kindLabel: UILabel!
     @IBOutlet weak var genreLabel: UILabel!
     @IBOutlet weak var priceButton: UIButton!
-    var searchResult: SearchResult! // searchResult object set with prepareForSegue code
+    var searchResult: SearchResult! {
+        didSet { // after property SearchResult changes (given object), call upDateUI
+            if isViewLoaded { // view is loaded for iPads because of split controllers
+                updateUI() }
+        } }// searchResult object set with prepareForSegue code
     var downloadTask: URLSessionDownloadTask?
     var soundID: SystemSoundID = 0
+    var ispopup = false
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -42,14 +47,23 @@ class DetailViewController: UIViewController {
         super.viewDidLoad()
         view.tintColor = UIColor(red: 20/255, green: 160/255, // change tint color on whole view
                                  blue: 160/255, alpha: 1)
-        view.backgroundColor = UIColor.clear // set the view to clear because of the custom gradient
         popupView.layer.cornerRadius = 10 // ask popupView for its layer and set corner radius
         
-        let gestureRecognizer = UITapGestureRecognizer(target: self, // if true, dismiss the view
-                                                       action: #selector(close))
-        gestureRecognizer.cancelsTouchesInView = false
-        gestureRecognizer.delegate = self // delegate of gestureRecognizer is this controller
-        view.addGestureRecognizer(gestureRecognizer)
+        if ispopup {
+            let gestureRecognizer = UITapGestureRecognizer(target: self,
+                                                           action: #selector(close))
+            gestureRecognizer.cancelsTouchesInView = false
+            gestureRecognizer.delegate = self
+            view.addGestureRecognizer(gestureRecognizer)
+            view.backgroundColor = UIColor.clear
+        } else {
+            if let displayName = Bundle.main.localizedInfoDictionary?["CFBundleDisplayName"] as? String {
+                title = displayName
+            }
+            view.backgroundColor = UIColor(patternImage:
+                UIImage(named: "LandscapeBackground")!)
+            popupView.isHidden = true
+        }
         
         if searchResult != nil { // if we have searchResult obj, update the UI with what was passed
             updateUI()
@@ -60,7 +74,7 @@ class DetailViewController: UIViewController {
     func updateUI() { // when segue happens, it sets this controllers searchResult object
         nameLabel.text = searchResult.name // set all the outlet properties with searchResult info
         if searchResult.artist.isEmpty {
-            artistNameLabel.text = "Unknown"
+            artistNameLabel.text = NSLocalizedString("Unknown", comment: "Localized Kind: Unknown")
         } else {
             artistNameLabel.text = searchResult.artist
         }
@@ -73,7 +87,7 @@ class DetailViewController: UIViewController {
         formatter.currencyCode = searchResult.currency
         let priceText: String
         if searchResult.price == 0 {
-            priceText = "Free"
+            priceText = NSLocalizedString("Free", comment: "Localized kind: Free")
         } else if let text = formatter.string(
             from: searchResult.price as NSNumber) {
             priceText = text
@@ -86,6 +100,8 @@ class DetailViewController: UIViewController {
         if let largeURL = URL(string: searchResult.imageLarge) {
             downloadTask = artworkImageView.loadImage(url: largeURL)//downloadTask lets deinitcancel
         }
+        
+        popupView.isHidden = false
     }
     
     // MARK:- Actions

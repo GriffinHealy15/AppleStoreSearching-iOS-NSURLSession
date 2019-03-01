@@ -103,7 +103,7 @@ class LandscapeViewController: UIViewController {
     
     private func showNothingFoundLabel() {
         let label = UILabel(frame: CGRect.zero) // create label
-        label.text = "Nothing Found" // give text, color, background color
+        label.text = NSLocalizedString("Nothing Found" , comment: "Localized Kind: Nothing Found") // give text, color, background color
         label.textColor = UIColor.white
         label.backgroundColor = UIColor.clear
         label.sizeToFit() // resize label to optimal size
@@ -207,6 +207,7 @@ class LandscapeViewController: UIViewController {
                     as! DetailViewController
                 // if button selected tag is 2007, we say 2007-2000 = 7, and that is the 7th index, where it stored the 7th object
                 let searchResult = list[(sender as! UIButton).tag - 2000] // get the list object at index of the button - 2000
+                detailViewController.ispopup = true
                 detailViewController.searchResult = searchResult // set searchResult with the object at selected index
             }
         } }
