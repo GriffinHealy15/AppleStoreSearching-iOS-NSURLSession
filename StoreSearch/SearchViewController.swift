@@ -62,17 +62,29 @@ class SearchViewController: UIViewController {
         listenForContentSizeChangeNotification() // when this view controller opens, call listen
     }
     
-    override func willTransition( // called whenever size change (i.e. horizontal orientaiton mode)
-        to newCollection: UITraitCollection,
-        with coordinator: UIViewControllerTransitionCoordinator) {
+    override func willTransition(to newCollection:
+        UITraitCollection, with coordinator:
+        UIViewControllerTransitionCoordinator) {
+        // for transitioning to iPhone plus models
         super.willTransition(to: newCollection, with: coordinator)
-        switch newCollection.verticalSizeClass {
-        case .compact: // if vertical size class is .compact we are transitioning to horizontal
-            showLandscape(with: coordinator) // show landscape by calling the method
-        case .regular, .unspecified: // if vertical size class is about to be .regular
-            hideLandscape(with: coordinator) // then we are going into portrait mode, so hide
-        }
-    }
+        let rect = UIScreen.main.bounds
+        // if the bounds screen are as either below, then were using iPhone plus model
+        if (rect.width == 736 && rect.height == 414) ||
+            (rect.width == 414 && rect.height == 736) {
+            if presentedViewController != nil { // dissmiss the popup
+                dismiss(animated: true, completion: nil)
+            }
+            // portrait
+            // landscape
+            // else is for iPhones only
+        } else if UIDevice.current.userInterfaceIdiom != .pad { // if not using iPad
+            switch newCollection.verticalSizeClass {
+            case .compact: // if vertical size class of going to be new orientation is .compact, then we are rotating to landscape, show we showLandscape()
+                showLandscape(with: coordinator)
+            case .regular, .unspecified: // if vertical size class is going to be .regular, we are switching to vertical and we hideLandscape()
+                hideLandscape(with: coordinator)
+            }
+        } }
     
     struct TableView {
         struct CellIdentifiers {

@@ -8,6 +8,7 @@
 
 import UIKit
 import AudioToolbox
+import MessageUI
 
 class DetailViewController: UIViewController {
     
@@ -136,6 +137,16 @@ class DetailViewController: UIViewController {
     func playSoundEffect() {
         AudioServicesPlaySystemSound(soundID)
     }
+    
+    // MARK:- Navigation
+    override func prepare(for segue: UIStoryboardSegue,
+                          sender: Any?) {
+        if segue.identifier == "ShowMenu" { // identifier is told to us when segue is about to happen
+            // we get identifier and set dest and delegate of the controller we are about to open to us, this controller
+            let controller = segue.destination as! MenuViewController
+            controller.delegate = self
+        }
+    }
 }
 
 // we (this controller) are the delegate for transitions, so when when happens, we implement the functions where we say which
@@ -174,4 +185,30 @@ extension DetailViewController: UIGestureRecognizerDelegate { // gesture recogni
         _ gestureRecognizer: UIGestureRecognizer,
         shouldReceive touch: UITouch) -> Bool {
         return (touch.view === self.view) // self.view = DetailViewController
+    } }
+
+// Conform to new protocol by delclaring ourself, this class, the delegate of MenuViewController. We implement the methods of the protocol here
+extension DetailViewController: MenuViewControllerDelegate {
+    func menuViewControllerSendEmail(_: MenuViewController) {
+        dismiss(animated: true) { // hide the popover
+            // closure after animation of dismissing popover controller
+            if MFMailComposeViewController.canSendMail() {
+                let controller = MFMailComposeViewController() // bring up mail contrl
+                controller.mailComposeDelegate = self // declare ourself delegate for the mail controller
+                controller.setSubject(NSLocalizedString("Support Request",
+                                                        comment: "Sending Email Through My App"))
+                controller.setToRecipients(["griffinparkerhealy@gmail.com"])
+                self.present(controller, animated: true, completion: nil)
+            }
+        }
+    } }
+
+// Here we delcare ourself a delegate of the MFMailComposeViewController
+// So mail controller will send us the 'result' of email sending
+extension DetailViewController: MFMailComposeViewControllerDelegate {
+    func mailComposeController(_ controller:
+        MFMailComposeViewController, didFinishWith result:
+        MFMailComposeResult, error: Error?) {
+        // after we press 'Send' or 'Cancel', doesn't matter the result of success sending, we dismiss the popover controller to show detail controller again
+        dismiss(animated: true, completion: nil)
     } }
